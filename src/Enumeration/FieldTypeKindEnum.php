@@ -15,4 +15,6 @@ class FieldTypeKindEnum
     const OBJECT       = 'OBJECT';
     const INPUT_OBJECT = 'INPUT_OBJECT';
     const ENUM_OBJECT  = 'ENUM';
+    const INTERFACE    = 'INTERFACE';
+    const UNION        = 'UNION';
 }

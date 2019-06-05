@@ -135,6 +135,9 @@ class SchemaClassGenerator
                 return $this->generateInputObject($objectName);
             case FieldTypeKindEnum::ENUM_OBJECT:
                 return $this->generateEnumObject($objectName);
+            case FieldTypeKindEnum::INTERFACE:
+            case FieldTypeKindEnum::UNION:
+                return false;
             default:
                 throw new RuntimeException('Unsupported object type');
         }
@@ -272,6 +275,10 @@ class SchemaClassGenerator
         while ($typeArray['ofType'] !== null) {
             $typeWrappers[] = $typeArray['kind'];
             $typeArray = $typeArray['ofType'];
+
+            if (!array_key_exists('ofType', $typeArray)) {
+                $typeArray['ofType'] = null;
+            }
 
             // Throw exception if next array doesn't have ofType key
             if (!array_key_exists('ofType', $typeArray)) {
