@@ -113,7 +113,7 @@ class SchemaClassGenerator
                     if ($argsObjectGenerated) {
 
                         // Add sub type as a field to the query object if all generation happened successfully
-                        $queryObjectBuilder->addObjectField($name, $typeName, $argsObjectName);
+                        $queryObjectBuilder->addObjectField($name, $typeName, $argsObjectName, $typeKind);
                     }
                 }
             }

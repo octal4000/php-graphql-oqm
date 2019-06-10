@@ -2,6 +2,7 @@
 
 namespace GraphQL\SchemaGenerator\CodeGenerator;
 
+use GraphQL\Enumeration\FieldTypeKindEnum;
 use GraphQL\SchemaGenerator\CodeGenerator\CodeFile\ClassFile;
 use GraphQL\SchemaObject\QueryObject;
 use GraphQL\Util\StringLiteralFormatter;
@@ -52,10 +53,10 @@ class QueryObjectClassBuilder extends ObjectClassBuilder
      * @param string $typeName
      * @param string $argsObjectName
      */
-    public function addObjectField(string $fieldName, string $typeName, string $argsObjectName)
+    public function addObjectField(string $fieldName, string $typeName, string $argsObjectName, string $typeKind)
     {
         $upperCamelCaseProp = StringLiteralFormatter::formatUpperCamelCase($fieldName);
-        $this->addObjectSelector($fieldName, $upperCamelCaseProp, $typeName, $argsObjectName);
+        $this->addObjectSelector($fieldName, $upperCamelCaseProp, $typeName, $argsObjectName, $typeKind);
     }
 
     /**
@@ -79,9 +80,10 @@ class QueryObjectClassBuilder extends ObjectClassBuilder
      * @param string $fieldTypeName
      * @param string $argsObjectName
      */
-    protected function addObjectSelector(string $fieldName, string $upperCamelName, string $fieldTypeName, string $argsObjectName)
+    protected function addObjectSelector(string $fieldName, string $upperCamelName, string $fieldTypeName, string $argsObjectName, string $typeKind)
     {
-        $objectClassName  = $fieldTypeName . 'QueryObject';
+        $objectKind = $this->getObjectKind($typeKind);
+        $objectClassName  = $fieldTypeName . $objectKind;
         $argsMapClassName = $argsObjectName . 'ArgumentsObject';
         $method = "public function select$upperCamelName($argsMapClassName \$argsObject = null)
 {
@@ -94,6 +96,20 @@ class QueryObjectClassBuilder extends ObjectClassBuilder
     return \$object;
 }";
         $this->classFile->addMethod($method);
+    }
+
+    /***
+     * @param string $typeKind
+     * @return string
+     */
+    protected function getObjectKind(string $typeKind)
+    {
+        switch($typeKind) { // may need to add other types
+            case FieldTypeKindEnum::ENUM_OBJECT:
+                return 'EnumObject';
+            default: 
+                return 'QueryObject';
+        }
     }
 
     /**
