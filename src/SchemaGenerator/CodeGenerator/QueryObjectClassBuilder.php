@@ -14,6 +14,9 @@ use GraphQL\Util\StringLiteralFormatter;
  */
 class QueryObjectClassBuilder extends ObjectClassBuilder
 {
+    /** @var array  */
+    protected $singleInstanceObject = ["Edges", "Node"];
+    
     /**
      * QueryObjectClassBuilder constructor.
      *
@@ -85,13 +88,27 @@ class QueryObjectClassBuilder extends ObjectClassBuilder
         $objectKind = $this->getObjectKind($typeKind);
         $objectClassName  = $fieldTypeName . $objectKind;
         $argsMapClassName = $argsObjectName . 'ArgumentsObject';
+
+        // generate required version of object instantiation code
+        $instantiateObjectCode = (in_array($upperCamelName, $this->singleInstanceObject))
+            ? "\$object = \$this->getSelectionObjectIfExists(new $objectClassName(\"$fieldName\"));"
+            : "\$object = new $objectClassName(\"$fieldName\");";
+
+        // generate required version of object selectField code
+        $selectFieldCode = (in_array($upperCamelName, $this->singleInstanceObject))
+            ? "if (!\$this->selectionObjectExists(\$object)) {
+                    \$this->selectField(\$object);
+                }"
+            : "\$this->selectField(\$object);";
+
+        // method code
         $method = "public function select$upperCamelName($argsMapClassName \$argsObject = null)
 {
-    \$object = new $objectClassName(\"$fieldName\");
+    " . $instantiateObjectCode . "
     if (\$argsObject !== null) {
         \$object->appendArguments(\$argsObject->toArray());
     }
-    \$this->selectField(\$object);
+    " . $selectFieldCode . "
 
     return \$object;
 }";
