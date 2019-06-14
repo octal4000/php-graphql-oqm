@@ -15,7 +15,7 @@ use GraphQL\Util\StringLiteralFormatter;
 class QueryObjectClassBuilder extends ObjectClassBuilder
 {
     /** @var array  */
-    protected $singleInstanceObject = ["Edges", "Node"];
+    protected $multiInstanceObject = [];
     
     /**
      * QueryObjectClassBuilder constructor.
@@ -90,16 +90,17 @@ class QueryObjectClassBuilder extends ObjectClassBuilder
         $argsMapClassName = $argsObjectName . 'ArgumentsObject';
 
         // generate required version of object instantiation code
-        $instantiateObjectCode = (in_array($upperCamelName, $this->singleInstanceObject))
-            ? "\$object = \$this->getSelectionObjectIfExists(new $objectClassName(\"$fieldName\"));"
-            : "\$object = new $objectClassName(\"$fieldName\");";
+        $instantiateObjectCode = (in_array($upperCamelName, $this->multiInstanceObject))
+            ? "\$object = new $objectClassName(\"$fieldName\");"
+            : "\$object = \$this->getSelectionObjectIfExists(new $objectClassName(\"$fieldName\"));";
+            
 
         // generate required version of object selectField code
-        $selectFieldCode = (in_array($upperCamelName, $this->singleInstanceObject))
-            ? "if (!\$this->selectionObjectExists(\$object)) {
-                    \$this->selectField(\$object);
-                }"
-            : "\$this->selectField(\$object);";
+        $selectFieldCode = (in_array($upperCamelName, $this->multiInstanceObject))
+            ? "\$this->selectField(\$object);"
+            : "if (!\$this->selectionObjectExists(\$object)) {
+        \$this->selectField(\$object);
+    }";
 
         // method code
         $method = "public function select$upperCamelName($argsMapClassName \$argsObject = null)
